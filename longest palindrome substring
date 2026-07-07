@@ -1,0 +1,31 @@
+class Solution:
+    def longestPalindrome(self, s: str) -> str:
+        if not s or len(s) < 1:
+            return ""
+        
+        start, end = 0, 0
+        
+        for i in range(len(s)):
+            # Case 1: Odd length palindrome (centre is a character)
+            len1 = self._expand_around_center(s, i, i)
+            # Case 2: Even length palindrome (centre is between characters)
+            len2 = self._expand_around_center(s, i, i + 1)
+            
+            # Take the maximum of both cases
+            max_len = max(len1, len2)
+            
+            # Update the start and end pointers if a longer palindrome is found
+            if max_len > end - start:
+                start = i - (max_len - 1) // 2
+                end = i + max_len // 2
+                
+        return s[start : end + 1]
+
+    def _expand_around_center(self, s: str, left: int, right: int) -> int:
+        # Expand while pointers are in bounds and characters match
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            left -= 1
+            right += 1
+        
+        # Return the length of the palindrome found
+        return right - left - 1
