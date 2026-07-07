@@ -1,0 +1,33 @@
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+       
+        # If the input is empty, return an empty list
+        if not digits:
+            return []
+        
+        # Mapping of digits to letters (standard phone keypad)
+        phone_map = {
+            "2": "abc", "3": "def", "4": "ghi", "5": "jkl",
+            "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz"
+        }
+        
+        result = []
+        
+        def backtrack(index, path):
+            # Base case: if the path length equals digits length, we found a combination
+            if len(path) == len(digits):
+                result.append("".join(path))
+                return
+            
+            # Get the letters for the current digit
+            possible_letters = phone_map[digits[index]]
+            
+            for letter in possible_letters:
+                path.append(letter)      # Choose
+                backtrack(index + 1, path) # Explore
+                path.pop()               # Backtrack (Un-choose)
+        
+        backtrack(0, [])
+        return result
+
+        
