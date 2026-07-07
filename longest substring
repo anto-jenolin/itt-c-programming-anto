@@ -1,0 +1,25 @@
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        # Map to store {character: last_seen_index}
+        char_map = {}
+        left = 0
+        max_length = 0
+        
+        for right in range(len(s)):
+            char = s[right]
+            
+            # If the character is in the map AND its index is within our current window
+            if char in char_map and char_map[char] >= left:
+                # Move left pointer to skip the duplicate
+                left = char_map[char] + 1
+            
+            # Update the character's last seen position
+            char_map[char] = right
+            
+            # Calculate the current window size and update max_length
+            current_window_size = right - left + 1
+            max_length = max(max_length, current_window_size)
+            
+        return max_length
+
+        
