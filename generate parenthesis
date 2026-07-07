@@ -1,0 +1,23 @@
+class Solution:
+    
+    def generateParenthesis(self, n: int) -> List[str]:
+        result = []
+        
+        def backtrack(current_string, open_count, close_count):
+            # Base case: if the string length is 2*n, we've found a combination
+            if len(current_string) == 2 * n:
+                result.append(current_string)
+                return
+            
+            # If we can still add an opening bracket, do so
+            if open_count < n:
+                backtrack(current_string + "(", open_count + 1, close_count)
+            
+            # If we can add a closing bracket (must be fewer than opening), do so
+            if close_count < open_count:
+                backtrack(current_string + ")", open_count, close_count + 1)
+        
+        backtrack("", 0, 0)
+        return result
+
+        
