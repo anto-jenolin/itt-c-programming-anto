@@ -1,0 +1,20 @@
+class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        n = len(nums)
+        # Outer loop picks the first element
+        for i in range(n):
+            # Inner loop picks the second element (always ahead of i)
+            for j in range(i + 1, n):
+                # Check if the pair matches the target
+                if nums[i] + nums[j] == target:
+                    return [i, j]
+        
+        return [] # Return empty if no solution is found
+
+# --- Example Usage ---
+solver = Solution()
+arr = [2, 7, 11, 15]
+target = 9
+
+result = solver.twoSum(arr, target)
+print(f"Indices: {result}")
