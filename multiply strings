@@ -1,0 +1,26 @@
+class Solution:
+    def multiply(self, num1: str, num2: str) -> str:
+        if num1 == "0" or num2 == "0":
+            return "0"
+        
+        # Result array can have at most len(num1) + len(num2) digits
+        res = [0] * (len(num1) + len(num2))
+        
+        # Multiply each digit from num1 and num2
+        for i in range(len(num1) - 1, -1, -1):
+            for j in range(len(num2) - 1, -1, -1):
+                # Convert char to int via ord() to follow constraints
+                mul = (ord(num1[i]) - ord('0')) * (ord(num2[j]) - ord('0'))
+                
+                # Calculate the position in the res array
+                p1, p2 = i + j, i + j + 1
+                
+                # Add product to current value at p2
+                total = mul + res[p2]
+                
+                res[p2] = total % 10  # Remainder stays at p2
+                res[p1] += total // 10 # Quotient (carry) moves to p1
+                
+        # Convert digit array to string, skipping leading zeros
+        ans = "".join(map(str, res))
+        return ans.lstrip('0')
