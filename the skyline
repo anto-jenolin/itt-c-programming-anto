@@ -1,0 +1,157 @@
+#include <stdlib.h>
+
+// Structure to represent a sweep-line critical event
+typedef struct {
+    int x;
+    int height; // Positive for building start, negative for building end
+    int id;     // Unique identifier for the building
+} Event;
+
+// Custom comparator for sorting events
+int compareEvents(const void* a, const void* b) {
+    Event* e1 = (Event*)a;
+    Event* e2 = (Event*)b;
+    
+    if (e1->x != e2->x) {
+        return (e1->x < e2->x) ? -1 : 1;
+    }
+    // If x coordinates are identical, apply precise tie-breaking logic:
+    // 1. Two starts: process higher building first
+    // 2. Two ends: process shorter building first
+    // 3. One start, one end: process start first
+    return e2->height - e1->height;
+}
+
+// Max-Heap implementation to keep track of active building heights
+typedef struct {
+    int heapSize;
+    int* val; // Stores heights
+    int* id;  // Stores corresponding building IDs
+} MaxHeap;
+
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void pushHeap(MaxHeap* h, int height, int id) {
+    h->val[h->heapSize] = height;
+    h->id[h->heapSize] = id;
+    int i = h->heapSize;
+    h->heapSize++;
+    
+    // Bubble up to maintain Max-Heap invariant
+    while (i > 0 && h->val[i] > h->val[(i - 1) / 2]) {
+        swap(&h->val[i], &h->val[(i - 1) / 2]);
+        swap(&h->id[i], &h->id[(i - 1) / 2]);
+        i = (i - 1) / 2;
+    }
+}
+
+// Function to assist lazy deletion: marks an ID as removed or processes a pop
+void popHeap(MaxHeap* h) {
+    if (h->heapSize == 0) return;
+    h->heapSize--;
+    h->val[0] = h->val[h->heapSize];
+    h->id[0] = h->id[h->heapSize];
+    
+    int i = 0;
+    // Bubble down to maintain Max-Heap invariant
+    while (2 * i + 1 < h->heapSize) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int largest = left;
+        
+        if (right < h->heapSize && h->val[right] > h->val[left]) {
+            largest = right;
+        }
+        if (h->val[i] >= h->val[largest]) {
+            break;
+        }
+        swap(&h->val[i], &h->val[largest]);
+        swap(&h->id[i], &h->id[largest]);
+        i = largest;
+    }
+}
+
+int** getSkyline(int** buildings, int buildingsSize, int* buildingsColSize, int* returnSize, int** returnColumnSizes) {
+    int eventCount = buildingsSize * 2;
+    Event* events = (Event*)malloc(eventCount * sizeof(Event));
+    
+    // 1. Flatten buildings into chronological sweep-line events
+    for (int i = 0; i < buildingsSize; i++) {
+        events[2 * i].x = buildings[i][0];
+        events[2 * i].height = buildings[i][2]; // Positive marks START
+        events[2 * i].id = i;
+        
+        events[2 * i + 1].x = buildings[i][1];
+        events[2 * i + 1].height = -buildings[i][2]; // Negative marks END
+        events[2 * i + 1].id = i;
+    }
+    
+    // Sort events sequentially across the x-axis
+    qsort(events, eventCount, sizeof(Event), compareEvents);
+    
+    // Max-Heap initialization
+    MaxHeap h;
+    h.heapSize = 0;
+    h.val = (int*)malloc(eventCount * sizeof(int));
+    h.id = (int*)malloc(eventCount * sizeof(int));
+    
+    // Boolean tracking array to implement lazy deletion from Max-Heap
+    char* removed = (char*)calloc(buildingsSize, sizeof(char));
+    
+    // Pre-allocate maximum possible result size container
+    int** result = (int**)malloc(eventCount * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(eventCount * sizeof(int));
+    int count = 0;
+    
+    int prevMaxHeight = 0;
+    
+    // 2. Process events sequentially via sweep line
+    for (int i = 0; i < eventCount; i++) {
+        Event e = events[i];
+        
+        if (e.height > 0) {
+            // It's a start event: insert into our priority tracker
+            pushHeap(&h, e.height, e.id);
+        } else {
+            // It's an end event: mark the building ID as out of scope
+            removed[e.id] = 1;
+        }
+        
+        // Skip over simultaneous events at the exact same x coordinate
+        if (i < eventCount - 1 && events[i + 1].x == e.x) {
+            continue;
+        }
+        
+        // 3. Lazy Deletion cleanup loop
+        // Clean out invalid / expired buildings sitting at the peak of the heap
+        while (h.heapSize > 0 && removed[h.id[0]]) {
+            popHeap(&h);
+        }
+        
+        // Get the valid peak height or fall back to ground level (0)
+        int currentMaxHeight = (h.heapSize > 0) ? h.val[0] : 0;
+        
+        // 4. Contour evaluation point recording
+        if (currentMaxHeight != prevMaxHeight) {
+            result[count] = (int*)malloc(2 * sizeof(int));
+            result[count][0] = e.x;
+            result[count][1] = currentMaxHeight;
+            (*returnColumnSizes)[count] = 2;
+            count++;
+            prevMaxHeight = currentMaxHeight;
+        }
+    }
+    
+    // Cleanup heap and temporary trackers
+    free(events);
+    free(h.val);
+    free(h.id);
+    free(removed);
+    
+    *returnSize = count;
+    return result;
+}
