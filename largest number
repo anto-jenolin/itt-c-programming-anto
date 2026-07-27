@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Custom comparator function for qsort
+int compare(const void* a, const void* b) {
+    // Max length of a number is 10 digits, so concatenated string is at most 20 digits.
+    // Buffer size 40 is completely safe.
+    char str1[40];
+    char str2[40];
+    
+    // Create combination AB
+    strcpy(str1, *(const char**)a);
+    strcat(str1, *(const char**)b);
+    
+    // Create combination BA
+    strcpy(str2, *(const char**)b);
+    strcat(str2, *(const char**)a);
+    
+    // Sort in descending order based on the combination comparison
+    return strcmp(str2, str1); 
+}
+
+char* largestNumber(int* nums, int numsSize) {
+    // Array to hold string representations of numbers
+    char** numStrs = (char**)malloc(numsSize * sizeof(char*));
+    int totalLength = 0;
+    
+    for (int i = 0; i < numsSize; i++) {
+        numStrs[i] = (char*)malloc(20 * sizeof(char));
+        sprintf(numStrs[i], "%d", nums[i]);
+        totalLength += strlen(numStrs[i]);
+    }
+    
+    // Sort the string array using our custom comparator
+    qsort(numStrs, numsSize, sizeof(char*), compare);
+    
+    // Edge Case: If the largest number after sorting is "0", the entire result is just "0"
+    if (strcmp(numStrs[0], "0") == 0) {
+        // Free allocated string memory before returning
+        for (int i = 0; i < numsSize; i++) {
+            free(numStrs[i]);
+        }
+        free(numStrs);
+        
+        char* result = (char*)malloc(2 * sizeof(char));
+        strcpy(result, "0");
+        return result;
+    }
+    
+    // Allocate space for the final result string (+1 for null-terminator)
+    char* result = (char*)malloc((totalLength + 1) * sizeof(char));
+    result[0] = '\0'; // Initialize empty string
+    
+    // Concatenate all sorted strings
+    for (int i = 0; i < numsSize; i++) {
+        strcat(result, numStrs[i]);
+        free(numStrs[i]); // Free memory row by row
+    }
+    free(numStrs);
+    
+    return result;
+}
