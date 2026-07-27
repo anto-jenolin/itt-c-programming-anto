@@ -1,0 +1,18 @@
+class Solution:
+    def canJump(self, nums: list[int]) -> bool:
+        farthest = 0
+        target = len(nums) - 1
+        
+        for i, jump in enumerate(nums):
+            # If the current index is unreachable, we're stuck
+            if i > farthest:
+                return False
+            
+            # Update the furthest possible reachable index
+            farthest = max(farthest, i + jump)
+            
+            # Optimization: If we can already reach the end, stop early
+            if farthest >= target:
+                return True
+                
+        return farthest >= target
