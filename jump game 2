@@ -1,0 +1,25 @@
+class Solution:
+    def jump(self, nums: list[int]) -> int:
+        # If there's only one element, you're already at the end
+        if len(nums) <= 1:
+            return 0
+        
+        jumps = 0
+        current_end = 0
+        farthest = 0
+        
+        # We don't need to jump from the last element, so we stop at len(nums) - 1
+        for i in range(len(nums) - 1):
+            # Update the absolute farthest index we can reach
+            farthest = max(farthest, i + nums[i])
+            
+            # If we've reached the end of our current jump range...
+            if i == current_end:
+                jumps += 1           # We must jump
+                current_end = farthest # Our next jump boundary is the farthest we saw
+                
+                # Optimization: if we can already reach the end, stop early
+                if current_end >= len(nums) - 1:
+                    break
+                    
+        return jumps
