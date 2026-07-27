@@ -1,0 +1,19 @@
+class Solution:
+    def permute(self, nums: list[int]) -> list[list[int]]:
+        res = []
+        
+        def backtrack(current_path, remaining_nums):
+            # If no numbers are left, we've found a full permutation
+            if not remaining_nums:
+                res.append(current_path)
+                return
+            
+            for i in range(len(remaining_nums)):
+                # Choose: pick a number and move it to the path
+                # Explore: recurse with the remaining numbers
+                backtrack(current_path + [remaining_nums[i]], 
+                          remaining_nums[:i] + remaining_nums[i+1:])
+                # (Implicit Un-choose): The loop naturally moves to the next number
+        
+        backtrack([], nums)
+        return res
