@@ -1,0 +1,28 @@
+#include <string.h>
+
+#define OFFSET 10000
+#define BUCKET_SIZE 20001
+
+int findKthLargest(int* nums, int numsSize, int k) {
+    // 1. Set up a counting array for the bounded range [-10000, 10000]
+    int count[BUCKET_SIZE];
+    memset(count, 0, sizeof(count));
+    
+    // 2. Populate frequencies of each number
+    for (int i = 0; i < numsSize; i++) {
+        count[nums[i] + OFFSET]++;
+    }
+    
+    // 3. Scan from the largest possible index backwards to find the kth element
+    int accumulated_votes = 0;
+    for (int i = BUCKET_SIZE - 1; i >= 0; i--) {
+        accumulated_votes += count[i];
+        
+        // Once our accumulated count meets or exceeds k, we've found our target
+        if (accumulated_votes >= k) {
+            return i - OFFSET;
+        }
+    }
+    
+    return -1;
+}
