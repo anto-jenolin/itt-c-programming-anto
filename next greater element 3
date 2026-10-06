@@ -1,0 +1,41 @@
+#define MAX_NUM_WIDTH 20
+void swap( char* array, int i, int j );
+
+int nextGreaterElement(int n) 
+{   
+    // convert n into numbers array
+    char nums[MAX_NUM_WIDTH];
+    sprintf( nums, "%d", n );
+
+    const int N = strlen( nums );
+
+    // step 1: find the rightmost i such that nums[i] < nums[i+1]
+    int i, j;
+    for ( i=N-2; i >= 0 && nums[i] >= nums[i+1]; i-- );
+    if ( i < 0 ) return -1;
+
+    // step 2: find the rightmost j such that nums[j] > nums[i]. i.e.
+    // we need some nums@j that is just greater than nums@i
+    for ( j=N-1; j > i && nums[i] >= nums[j]; j-- );
+
+    // step 3: swap nums@i and nums@j
+    swap( nums, i, j );
+
+    // step 4: reverse nums[ i+1: ]
+    i = i+1; j = N-1;
+    while ( i < j ) {
+        swap( nums, i, j );
+        i++; j--;
+    }
+
+    const long long int res = atoll( nums );
+    if ( res > INT_MAX ) return -1;
+    return res;
+}
+
+void swap( char* array, int i, int j )
+{
+    const int tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+}
